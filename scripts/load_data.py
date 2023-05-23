@@ -38,18 +38,6 @@ def to_datetime(date, hour):
     return datetime.fromisoformat(f'{parts[2]}-{month}-{parts[0]} {hour}')
 
 
-def to_orm(keys, row):
-    date_, hour, transaction, note, amount_ = extract(keys, row)
-    amount = float(amount_)
-    return Transaction(
-        note=note,
-        amount=amount,
-        is_entry=amount > 0,
-        datetime=to_datetime(date_, hour),
-        method=transaction,
-    )
-
-
 def run(data_path):
     with open(data_path) as f:
         data = csv.reader(f)
