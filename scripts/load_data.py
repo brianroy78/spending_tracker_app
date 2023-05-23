@@ -56,13 +56,24 @@ def run(data_path):
         columns = list(map(str.lower, next(data)))
         keys = {c: columns.index(c) for c in expected_cols}
         session = db.connect_get_session()
-        latest_transaction_datetime = (
+        result = (
             session.query(Transaction.datetime)
             .order_by(Transaction.datetime.desc())
-            .first()[0]
+            .first()
         )
+        latest_transaction_datetime = result[0] if result is not None else None
         for row in data:
+            date_, hour, transaction, note, amount_ = extract(keys, row)
+            datetime_ = to_datetime(date_, hour)
+            if latest_transaction_datetime is not None and datetime_ <= latest_transaction_datetime:
+                break
+            amount = float(amount_)
+            session.add(Transaction(
+                note=note,
+                amount=amount,
+                is_entry=amount > 0,
+                datetime=to_datetime(date_, hour),
+                method=transaction,
+            ))
 
-
-        session.add_all([to_orm(keys, r) for r in data])
         session.commit()

@@ -32,9 +32,8 @@ def get_session() -> Session:
 
 
 def connect():
-    config = ConfigParser()
-    config.read('settings.ini')
-    set_settings(config['DEFAULT']['sqlalchemy.url'])
+    set_settings(_get_settings()['DEFAULT']['sqlalchemy.url'])
+
 
 def connect_get_session():
     connect()
@@ -42,13 +41,15 @@ def connect_get_session():
 
 
 def create_database():
-    config = ConfigParser()
-    config.read('settings.ini')
-    set_settings(config['DEFAULT']['sqlalchemy.url'])
+    connect()
     Base.metadata.create_all(Data.ENGINE)
 
 
 def remove_sqlite_db():
+    os.remove(_get_settings()['DEFAULT']['sqlalchemy.url'].split('/')[-1])
+
+
+def _get_settings():
     config = ConfigParser()
     config.read('settings.ini')
-    os.remove(config['DEFAULT']['sqlalchemy.url'].split('/')[-1])
+    return config
