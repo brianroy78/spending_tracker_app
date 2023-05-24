@@ -12,7 +12,7 @@ from configparser import ConfigParser
 Base = declarative_base()
 
 modules = glob.glob(join(dirname(__file__), "*.py"))
-__all__ = [basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('__init__.py')]
+__all__ = [basename(f)[:-3] for f in modules if isfile(f) and not f.endswith("__init__.py")]
 
 
 class Data:
@@ -32,7 +32,7 @@ def get_session() -> Session:
 
 
 def connect():
-    set_settings(_get_settings()['DEFAULT']['sqlalchemy.url'])
+    set_settings(_get_settings()["DEFAULT"]["sqlalchemy.url"])
 
 
 def connect_get_session():
@@ -43,17 +43,17 @@ def connect_get_session():
 def create_database():
     connect()
     Base.metadata.create_all(Data.ENGINE)
-    print('Database created!')
+    print("Database created!")
 
 
 def remove_sqlite_db():
-    path = _get_settings()['DEFAULT']['sqlalchemy.url'].split('/')[-1]
+    path = _get_settings()["DEFAULT"]["sqlalchemy.url"].split("/")[-1]
     if exists(path):
         os.remove(path)
-        print(f'{path} database deleted!')
+        print(f"{path} database deleted!")
 
 
 def _get_settings():
     config = ConfigParser()
-    config.read('settings.ini')
+    config.read("settings.ini")
     return config

@@ -31,7 +31,7 @@ def run(from_: str, to: str):
     categories = [
         Category(
             name=c.name,
-            keywords=c.keywords.split('|') if not utils.is_empty(c.keywords) else [],
+            keywords=c.keywords.split("|") if not utils.is_empty(c.keywords) else [],
             expenditure=0,
         )
         for c in session.query(CategoryTable)
@@ -44,6 +44,6 @@ def run(from_: str, to: str):
         category.expenditure += transaction.amount
         print(transaction)
     for c in categories:
-        print(f'{c.name} => {c.expenditure}')
-    print(f'{unknown_category.name} => {unknown_category.expenditure}')
-    print(f'total => {sum([c.expenditure for c in categories]) + unknown_category.expenditure}')
+        print(f"{c.name} => {c.expenditure}")
+    print(f"{unknown_category.name} => {unknown_category.expenditure}")
+    print(f"total => {sum([c.expenditure for c in categories]) + unknown_category.expenditure}")
