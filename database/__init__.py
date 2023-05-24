@@ -43,6 +43,7 @@ def connect_get_session():
 def create_database():
     connect()
     Base.metadata.create_all(Data.ENGINE)
+    print('Database created!')
 
 
 def remove_sqlite_db():

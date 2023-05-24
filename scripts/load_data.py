@@ -2,7 +2,7 @@ import csv
 from datetime import datetime
 
 import database as db
-from database.models import Transaction
+from database.models import TransactionTable
 
 expected_cols = [
     'fecha',
@@ -45,8 +45,8 @@ def run(data_path):
         keys = {c: columns.index(c) for c in expected_cols}
         session = db.connect_get_session()
         result = (
-            session.query(Transaction.datetime)
-            .order_by(Transaction.datetime.desc())
+            session.query(TransactionTable.datetime)
+            .order_by(TransactionTable.datetime.desc())
             .first()
         )
         latest_transaction_datetime = result[0] if result is not None else None
@@ -56,7 +56,7 @@ def run(data_path):
             if latest_transaction_datetime is not None and datetime_ <= latest_transaction_datetime:
                 break
             amount = float(amount_)
-            session.add(Transaction(
+            session.add(TransactionTable(
                 note=note,
                 amount=amount,
                 is_entry=amount > 0,
