@@ -1,6 +1,6 @@
 import database
 from core.models import ExpenditureCategories
-from database.models import TransactionTable, CategoryTable
+from database.models import CategoryTable
 
 essentials = ["hipermaxi", "fidalga"]
 eating_outs = ["polloskiky", "lafabricadebiancaflor", "tortasdolly", "frida"]
@@ -19,5 +19,4 @@ def run():
     session.add(CategoryTable(name=ExpenditureCategories.CAR.value, keywords="|".join(car)))
     session.add(CategoryTable(name=ExpenditureCategories.GIFTS.value, keywords=""))
     session.add(CategoryTable(name=ExpenditureCategories.CLOTHES.value, keywords=""))
-    session.add(CategoryTable(name=ExpenditureCategories.UNKNOWN.value, keywords=""))
     session.commit()
