@@ -1,9 +1,9 @@
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 import database as db
+from core import utils
 from core.models import Category, ExpenditureCategories
 from database.models import TransactionTable, CategoryTable
-from core import utils
 
 
 def match(unknown_category: Category, categories: list[Category], note: str) -> Category:
@@ -40,8 +40,8 @@ def run(from_: str, to: str):
     for transaction in get_transactions(session, from_date, to_date):
         if transaction.is_entry:
             continue
-        category = match(unknown_category, categories, transaction.note)
-        category.expenditure += transaction.amount
+        category = match(unknown_category, categories, str(transaction.note))
+        category.expenditure += float(transaction.amount)
         print(transaction)
     for c in categories:
         print(f"{c.name} => {c.expenditure}")
