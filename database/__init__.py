@@ -1,6 +1,6 @@
 import glob
 import os
-from os.path import dirname, basename, isfile, join
+from os.path import dirname, basename, isfile, join, exists
 from typing import Optional
 
 from sqlalchemy import create_engine
@@ -46,7 +46,10 @@ def create_database():
 
 
 def remove_sqlite_db():
-    os.remove(_get_settings()['DEFAULT']['sqlalchemy.url'].split('/')[-1])
+    path = _get_settings()['DEFAULT']['sqlalchemy.url'].split('/')[-1]
+    if exists(path):
+        os.remove(path)
+        print(f'{path} database deleted!')
 
 
 def _get_settings():
