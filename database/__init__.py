@@ -1,18 +1,14 @@
-import glob
 import os
-from os.path import dirname, basename, isfile, join, exists
+from configparser import ConfigParser
+from os.path import exists
 from typing import Optional
 
 from sqlalchemy import create_engine
 from sqlalchemy.future import Engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm import declarative_base
-from configparser import ConfigParser
 
 Base = declarative_base()
-
-modules = glob.glob(join(dirname(__file__), "*.py"))
-__all__ = [basename(f)[:-3] for f in modules if isfile(f) and not f.endswith("__init__.py")]
 
 
 class Data:
@@ -28,11 +24,14 @@ def set_settings(url: str):
 
 
 def get_session() -> Session:
+    assert Data.SESSION_MAKER is not None
     return Data.SESSION_MAKER()
 
 
 def connect():
-    set_settings(_get_settings()["DEFAULT"]["sqlalchemy.url"])
+    from database._table_registration import tables
+
+    set_settings(_get_settings()["sqlalchemy.url"])
 
 
 def connect_get_session():
@@ -43,17 +42,17 @@ def connect_get_session():
 def create_database():
     connect()
     Base.metadata.create_all(Data.ENGINE)
-    print("Database created!")
+    print('SQLite db created!')
 
 
 def remove_sqlite_db():
-    path = _get_settings()["DEFAULT"]["sqlalchemy.url"].split("/")[-1]
+    path = _get_settings()["sqlalchemy.url"].split("/")[-1]
     if exists(path):
         os.remove(path)
-        print(f"{path} database deleted!")
+        print('SQLite db removed!')
 
 
 def _get_settings():
     config = ConfigParser()
     config.read("settings.ini")
-    return config
+    return config["database"]
