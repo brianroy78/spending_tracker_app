@@ -46,11 +46,13 @@ def run(data_path):
         session = db.connect_get_session()
         result = session.query(TransactionTable.datetime).order_by(TransactionTable.datetime.desc()).first()
         latest_transaction_datetime = result[0] if result is not None else None
+        counter = 0
         for row in data:
             date_, hour, transaction, note, amount_ = extract(keys, row)
             datetime_ = to_datetime(date_, hour)
             if latest_transaction_datetime is not None and datetime_ <= latest_transaction_datetime:
-                break
+                continue
+            counter += 1
             amount = float(amount_)
             session.add(
                 TransactionTable(
@@ -63,3 +65,4 @@ def run(data_path):
             )
 
         session.commit()
+        print(f"{counter} new Transactions inserted!")
