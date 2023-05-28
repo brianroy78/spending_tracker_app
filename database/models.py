@@ -1,4 +1,7 @@
-from sqlalchemy import Column, Integer, String, Numeric, Boolean, DateTime
+from datetime import datetime
+
+from sqlalchemy import String, ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database import Base
 
@@ -6,12 +9,12 @@ from database import Base
 class TransactionTable(Base):
     __tablename__ = "transaction"
 
-    id = Column(Integer, primary_key=True)
-    note = Column(String(128), nullable=False)
-    amount = Column(Numeric(2), nullable=False)
-    is_entry = Column(Boolean, nullable=False)
-    datetime = Column(DateTime, nullable=False)
-    method = Column(String(128), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    note: Mapped[str] = mapped_column(String(128))
+    amount: Mapped[int]
+    is_entry: Mapped[bool]
+    datetime: Mapped[datetime]
+    method: Mapped[str] = mapped_column(String(128), nullable=False)
 
     def __repr__(self):
         return f"{self.amount=} {self.note=} {self.is_entry=} {self.datetime=} {self.method=}"
@@ -20,6 +23,14 @@ class TransactionTable(Base):
 class CategoryTable(Base):
     __tablename__ = "category"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128), nullable=False)
-    keywords = Column(String(256), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
+    key_texts: Mapped[list["KeyTextTable"]] = relationship("KeyTextTable")
+
+
+class KeyTextTable(Base):
+    __tablename__ = "key_text"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    text: Mapped[str] = mapped_column(String(128))
+    category_id: Mapped[int] = mapped_column(ForeignKey("category.id"))
