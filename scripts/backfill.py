@@ -38,31 +38,31 @@ def to_datetime(date, hour):
     return datetime.fromisoformat(f"{parts[2]}-{month}-{parts[0]} {hour}")
 
 
+def get_transactions_dict(session):
+    return {
+        (
+            t.note,
+            t.datetime,
+        ): t
+        for t in session.query(TransactionTable)
+    }
+
+
 def run(data_path):
     with open(data_path) as f:
         data = csv.reader(f)
         columns = list(map(str.lower, next(data)))
         keys = {c: columns.index(c) for c in expected_cols}
         session = db.connect_get_session()
-        result = session.query(TransactionTable.datetime).order_by(TransactionTable.datetime.desc()).first()
-        latest_transaction_datetime = result[0] if result is not None else None
+        t_dict = get_transactions_dict(session)
         counter = 0
         for row in data:
             date_, hour, transaction, note, amount_ = extract(keys, row)
             datetime_ = to_datetime(date_, hour)
-            if latest_transaction_datetime is not None and datetime_ <= latest_transaction_datetime:
-                continue
             counter += 1
-            amount = int(amount_ * 100)
-            session.add(
-                TransactionTable(
-                    note=note,
-                    amount=amount,
-                    is_entry=amount > 0,
-                    datetime=to_datetime(date_, hour),
-                    method=transaction,
-                )
-            )
+            amount = int(float(amount_) * 100)
+            t = t_dict[(note, datetime_)]
+            t.amount = amount
 
         session.commit()
         print(f"{counter} new Transactions inserted!")
