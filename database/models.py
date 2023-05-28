@@ -32,5 +32,5 @@ class KeyTextTable(Base):
     __tablename__ = "key_text"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    text: Mapped[str] = mapped_column(String(128))
+    text: Mapped[str] = mapped_column(String(128), unique=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("category.id"))

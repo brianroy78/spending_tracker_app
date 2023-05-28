@@ -1,12 +1,11 @@
 import operator
-import struct
 from functools import partial, reduce
 from operator import itemgetter
 
 import database
 from core.functors import IterFunctor
 from core.utils import split_keywords
-from database.models import TransactionTable, CategoryTable
+from database.models import TransactionTable, CategoryTable, KeyTextTable
 
 
 def get_key(t: TransactionTable):
@@ -24,7 +23,7 @@ def run():
     session = database.connect_get_session()
     transactions = session.query(TransactionTable).filter(TransactionTable.is_entry.is_(False))
 
-    categories_query = session.query(CategoryTable.keywords).filter(CategoryTable.keywords != "").all()
+    categories_query = session.query(KeyTextTable.text).all()
     keywords = (
         IterFunctor(categories_query)
         .map(itemgetter(0))
