@@ -3,7 +3,6 @@ from functools import partial
 from operator import attrgetter
 
 import database as db
-from core import utils
 from core.functors import IterFunctor
 from core.models import Category
 from database.models import TransactionTable, CategoryTable
@@ -26,23 +25,24 @@ def match(key_texts: list[str], transaction: TransactionTable) -> bool:
     return False
 
 
+def transform_to_category(transactions: list[TransactionTable], category: CategoryTable) -> Category:
+    key_texts = IterFunctor(category.key_texts).map(attrgetter("text")).list()
+    filter_ = partial(match, key_texts)
+
+    return Category(
+        name=category.name,
+        key_texts=key_texts,
+        transactions=IterFunctor(transactions).filter(filter_).list(),
+    )
+
+
 def run(from_: str, to: str):
     from_date = datetime.fromisoformat(from_)
     to_date = datetime.fromisoformat(to)
     session = db.connect_get_session()
     categories = session.query(CategoryTable).all()
-    results = []
     transactions = get_transactions(session, from_date, to_date)
-    for c in categories:
-        key_texts = IterFunctor(c.key_texts).map(attrgetter("text")).list()
-        filter_ = partial(match, key_texts)
-        results.append(
-            Category(
-                name=c.name,
-                key_texts=key_texts,
-                transactions=IterFunctor(transactions).filter(filter_).list(),
-            )
-        )
-
+    transform_ = partial(transform_to_category, transactions)
+    results = IterFunctor(categories).map(transform_).list()
     for r in results:
         print(r.total_expenditure())
