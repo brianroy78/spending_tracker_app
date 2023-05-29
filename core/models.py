@@ -16,3 +16,6 @@ class Category:
     name: str
     key_texts: list[str]
     transactions: list[Transaction]
+
+    def total_expenditure(self) -> int:
+        return sum([t.amount for t in self.transactions])

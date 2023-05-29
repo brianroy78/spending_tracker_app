@@ -53,7 +53,7 @@ def run(data_path):
             if latest_transaction_datetime is not None and datetime_ <= latest_transaction_datetime:
                 continue
             counter += 1
-            amount = int(amount_ * 100)
+            amount = int(float(amount_) * 100)
             session.add(
                 TransactionTable(
                     note=note,
