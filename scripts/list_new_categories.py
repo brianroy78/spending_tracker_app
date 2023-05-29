@@ -4,8 +4,7 @@ from operator import itemgetter
 
 import database
 from core.functors import IterFunctor
-from core.utils import split_keywords
-from database.models import TransactionTable, CategoryTable, KeyTextTable
+from database.models import TransactionTable, KeyTextTable
 
 
 def get_key(t: TransactionTable):
@@ -24,15 +23,8 @@ def run():
     transactions = session.query(TransactionTable).filter(TransactionTable.is_entry.is_(False))
 
     categories_query = session.query(KeyTextTable.text).all()
-    keywords = (
-        IterFunctor(categories_query)
-        .map(itemgetter(0))
-        .map(split_keywords)
-        .apply(partial(reduce, operator.iadd))
-        .list()
-    )
-
-    _is_not = partial(is_not_categorized, keywords)
+    key_texts = IterFunctor(categories_query).map(itemgetter(0)).list()
+    _is_not = partial(is_not_categorized, key_texts)
     result = set(filter(_is_not, map(get_key, transactions)))
     for r in result:
         print(r)
