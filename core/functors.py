@@ -18,10 +18,11 @@ class Functor(ty.Generic[A]):
         return IterFunctor(func(self.value))
 
 
-B = ty.Iterator[A]
+B = ty.Iterable[A]
 F = ty.Iterator[D]
 C = ty.Callable[[B], F]
 H = ty.Callable[[B], D]
+I = ty.Callable[[A], bool]
 
 
 class IterFunctor(ty.Generic[A]):
@@ -45,3 +46,6 @@ class IterFunctor(ty.Generic[A]):
 
     def apply_partial(self, func: C, *args, **kwargs) -> "IterFunctor[D]":
         return IterFunctor(partial(func, *args, **kwargs)(self.value))
+
+    def filter(self, func: I) -> "IterFunctor[D]":
+        return IterFunctor(filter(func, self.value))
