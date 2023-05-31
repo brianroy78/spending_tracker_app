@@ -15,6 +15,7 @@ class TransactionTable(Base):
     is_entry: Mapped[bool]
     datetime: Mapped[datetime]
     method: Mapped[str] = mapped_column(String(128), nullable=False)
+    details: Mapped[list["TransactionDetailTable"]] = relationship("TransactionDetailTable")
 
     def __repr__(self):
         return f"{self.amount=} {self.note=} {self.is_entry=} {self.datetime=} {self.method=}"
@@ -43,3 +44,4 @@ class TransactionDetailTable(Base):
     amount: Mapped[int]
     category_id: Mapped[int] = mapped_column(ForeignKey("category.id"))
     transaction_id: Mapped[int] = mapped_column(ForeignKey("transaction.id"))
+    category: Mapped["CategoryTable"] = relationship("CategoryTable")

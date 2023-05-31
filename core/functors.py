@@ -1,5 +1,5 @@
+import functools
 import typing as ty
-from functools import partial
 
 A = ty.TypeVar("A")
 D = ty.TypeVar("D")
@@ -23,6 +23,7 @@ F = ty.Iterator[D]
 C = ty.Callable[[B], F]
 H = ty.Callable[[B], D]
 I = ty.Callable[[A], bool]
+J = ty.Callable[[A, A], A]
 
 
 class IterFunctor(ty.Generic[A]):
@@ -42,10 +43,13 @@ class IterFunctor(ty.Generic[A]):
         return list(self.value)
 
     def map_partial(self, func: E, *args, **kwargs) -> "IterFunctor[D]":
-        return IterFunctor(map(partial(func, *args, **kwargs), self.value))
+        return IterFunctor(map(functools.partial(func, *args, **kwargs), self.value))
 
     def apply_partial(self, func: C, *args, **kwargs) -> "IterFunctor[D]":
-        return IterFunctor(partial(func, *args, **kwargs)(self.value))
+        return IterFunctor(functools.partial(func, *args, **kwargs)(self.value))
 
     def filter(self, func: I) -> "IterFunctor[D]":
         return IterFunctor(filter(func, self.value))
+
+    def reduce(self, func: J) -> "IterFunctor[A]":
+        return IterFunctor(functools.reduce(func, self.value))
