@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 
 import database as db
 from core.functors import IterFunctor
-from core.models import Category
+from core.models import Category, Transaction
 from core.utils import is_empty
 from database.models import TransactionTable, CategoryTable, TransactionDetailTable
 
@@ -62,14 +62,25 @@ def flat_transaction(transaction: TransactionTable) -> list[TransactionTable]:
     return new_transactions
 
 
+def detail_to_transaction(detail: TransactionDetailTable) -> Transaction:
+    return Transaction(
+        note=detail.transaction.note,
+        amount=detail.amount,
+        is_entry=detail.transaction.is_entry,
+        datetime=detail.transaction.datetime,
+        method=detail.transaction.method,
+    )
+
+
 def transform_to_category(transactions: list[TransactionTable], category: CategoryTable) -> Category:
     key_texts = IterFunctor(category.key_texts).map(attrgetter("text")).list()
     filter_ = partial(match, key_texts)
-
+    defined = [detail_to_transaction(d) for d in category.details]
+    matched_transactions = IterFunctor(transactions).filter(filter_).list()
     return Category(
         name=category.name,
         key_texts=key_texts,
-        transactions=IterFunctor(transactions).filter(filter_).list(),
+        transactions=matched_transactions + defined,
     )
 
 
@@ -77,7 +88,11 @@ def run(from_: str, to: str):
     from_date = datetime.fromisoformat(from_)
     to_date = datetime.fromisoformat(to)
     session = db.connect_get_session()
-    categories = session.query(CategoryTable).options(selectinload(CategoryTable.key_texts)).all()
+    categories = (
+        session.query(CategoryTable)
+        .options(selectinload(CategoryTable.key_texts), selectinload(CategoryTable.details))
+        .all()
+    )
     transactions = IterFunctor(get_transactions(session, from_date, to_date)).map(flat_transaction).reduce(iadd).list()
     transform_ = partial(transform_to_category, transactions)
     results = IterFunctor(categories).map(transform_).list()

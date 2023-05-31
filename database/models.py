@@ -27,6 +27,7 @@ class CategoryTable(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(128))
     key_texts: Mapped[list["KeyTextTable"]] = relationship("KeyTextTable")
+    details: Mapped[list["TransactionDetailTable"]] = relationship("TransactionDetailTable")
 
 
 class KeyTextTable(Base):
@@ -44,4 +45,6 @@ class TransactionDetailTable(Base):
     amount: Mapped[int]
     category_id: Mapped[int] = mapped_column(ForeignKey("category.id"))
     transaction_id: Mapped[int] = mapped_column(ForeignKey("transaction.id"))
+
     category: Mapped["CategoryTable"] = relationship("CategoryTable")
+    transaction: Mapped["TransactionTable"] = relationship("TransactionTable")
