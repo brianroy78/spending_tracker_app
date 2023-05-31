@@ -37,8 +37,9 @@ class KeyTextTable(Base):
 
 
 class TransactionDetailTable(Base):
-    __tablename__ = "key_text"
+    __tablename__ = "transaction_detail"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    amount: Mapped[int]
     category_id: Mapped[int] = mapped_column(ForeignKey("category.id"))
     transaction_id: Mapped[int] = mapped_column(ForeignKey("transaction.id"))

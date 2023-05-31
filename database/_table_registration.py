@@ -1,3 +1,3 @@
-from database.models import TransactionTable, CategoryTable
+from database.models import TransactionTable, CategoryTable, KeyTextTable, TransactionDetailTable
 
-tables = [TransactionTable, CategoryTable,]
+tables = [TransactionTable, CategoryTable, KeyTextTable, TransactionDetailTable]
