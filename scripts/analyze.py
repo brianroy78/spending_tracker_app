@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
-from functools import partial, reduce
-from operator import attrgetter, iadd
+from functools import partial
+from operator import attrgetter, is_not
+from typing import Optional
 
 from sqlalchemy.orm import selectinload
 
@@ -32,34 +33,20 @@ def match(key_texts: list[str], transaction: TransactionTable) -> bool:
     return False
 
 
-def flat_transaction(transaction: TransactionTable) -> list[TransactionTable]:
+def flat_transaction(transaction: TransactionTable) -> Optional[TransactionTable]:
     if is_empty(transaction.details):
-        return [transaction]
-    remaining_amount = transaction.amount
-    new_transactions: list[TransactionTable] = []
-    for detail in transaction.details:
-        new_transactions.append(
-            TransactionTable(
-                note=transaction.note,
-                amount=transaction.amount - detail.amount,
-                is_entry=transaction.is_entry,
-                datetime=transaction.datetime,
-                method=transaction.method,
-            )
-        )
-        remaining_amount -= detail.amount
-
-    if remaining_amount > 0:
-        new_transactions.append(
-            TransactionTable(
-                note=transaction.note,
-                amount=remaining_amount,
-                is_entry=transaction.is_entry,
-                datetime=transaction.datetime,
-                method=transaction.method,
-            )
-        )
-    return new_transactions
+        return transaction
+    new_amount = transaction.amount - sum([d.amount for d in transaction.details])
+    if new_amount <= 0:
+        return None
+    return TransactionTable(
+        id=transaction.id,
+        note=transaction.note,
+        amount=new_amount,
+        is_entry=transaction.is_entry,
+        datetime=transaction.datetime,
+        method=transaction.method,
+    )
 
 
 def detail_to_transaction(detail: TransactionDetailTable) -> Transaction:
@@ -93,7 +80,10 @@ def run(from_: str, to: str):
         .options(selectinload(CategoryTable.key_texts), selectinload(CategoryTable.details))
         .all()
     )
-    transactions = IterFunctor(get_transactions(session, from_date, to_date)).map(flat_transaction).reduce(iadd).list()
+    is_not_none = partial(is_not, None)
+    transactions = (
+        IterFunctor(get_transactions(session, from_date, to_date)).map(flat_transaction).filter(is_not_none).list()
+    )
     transform_ = partial(transform_to_category, transactions)
     results = IterFunctor(categories).map(transform_).list()
     for r in results:
